@@ -13,18 +13,18 @@ namespace xam
 	{
 		#region Constructor - Required Not sure why Find out
 
-		public _048_xamViewController (IntPtr handle) : base (handle)
+		public _048_xamViewController(IntPtr handle) : base(handle)
 		{
 
 		}
 
-		#endregion
-	
+		#endregion`
+
 		#region Fields
 
 		bool gameOver = true;
 
-		int? [,] board = new int?[4, 4];
+		int?[,] board = new int?[4, 4];
 		UILabel[,] boardTiles = new UILabel[4, 4];
 		List<NewTile> newTiles = new List<NewTile>();
 		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
@@ -34,48 +34,49 @@ namespace xam
 
 		#region View lifecycle
 
-		public override void ViewWillAppear (bool animated)
+		public override void ViewWillAppear(bool animated)
 		{
-			base.ViewWillAppear (animated);
+			base.ViewWillAppear(animated);
 
 			gameOver = false;
 
 			DrawBlankBoard();
 
-			RandomPlacement (-1,-1,-1);
-			RandomPlacement (-1,-1,-1);
+			RandomPlacement(-1, -1, -1);
+			RandomPlacement(-1, -1, -1);
 //			RandomPlacement (0,0,2);
 //			RandomPlacement (0,1,2);
 //			RandomPlacement (0,2,2);
 //			RandomPlacement (0,3,2);
-			Animations ();
+			Animations();
 
 		}
 
-		public override void ViewDidLoad ()
+		public override void ViewDidLoad()
 		{
-			base.ViewDidLoad ();
+			base.ViewDidLoad();
 
-			View.AddGestureRecognizer (new UISwipeGestureRecognizer (new Action<UISwipeGestureRecognizer> (SwipeHandler)) {
-				Direction=UISwipeGestureRecognizerDirection.Left
+			View.AddGestureRecognizer(new UISwipeGestureRecognizer(new Action<UISwipeGestureRecognizer>(SwipeHandler)) {
+				Direction = UISwipeGestureRecognizerDirection.Left
 			});
-			View.AddGestureRecognizer (new UISwipeGestureRecognizer (new Action<UISwipeGestureRecognizer> (SwipeHandler)) {
-				Direction=UISwipeGestureRecognizerDirection.Right
+			View.AddGestureRecognizer(new UISwipeGestureRecognizer(new Action<UISwipeGestureRecognizer>(SwipeHandler)) {
+				Direction = UISwipeGestureRecognizerDirection.Right
 			});
-			View.AddGestureRecognizer (new UISwipeGestureRecognizer (new Action<UISwipeGestureRecognizer> (SwipeHandler)) {
-				Direction=UISwipeGestureRecognizerDirection.Up
+			View.AddGestureRecognizer(new UISwipeGestureRecognizer(new Action<UISwipeGestureRecognizer>(SwipeHandler)) {
+				Direction = UISwipeGestureRecognizerDirection.Up
 			});
-			View.AddGestureRecognizer (new UISwipeGestureRecognizer (new Action<UISwipeGestureRecognizer> (SwipeHandler)) {
-				Direction=UISwipeGestureRecognizerDirection.Down
+			View.AddGestureRecognizer(new UISwipeGestureRecognizer(new Action<UISwipeGestureRecognizer>(SwipeHandler)) {
+				Direction = UISwipeGestureRecognizerDirection.Down
 
 			});
 		}
 
 		#endregion
-	
+
 		#region SwipeHandler
 
-		void SwipeHandler(UISwipeGestureRecognizer recognizer){
+		void SwipeHandler(UISwipeGestureRecognizer recognizer)
+		{
 
 			if (gameOver)
 				return;
@@ -100,18 +101,19 @@ namespace xam
 
 			//MoveLeftTest();
 
-			RandomPlacement(-1,-1,-1);
+			RandomPlacement(-1, -1, -1);
 			Animations();
 
-			labelDebug.Text = DebugBoard();
+			//labelDebug.Text = DebugBoard();
 
-			if(CheckGameOver()){
+			if (CheckGameOver()) {
 				labelScore.Text = "Game Over";
 				gameOver = true;
 			}
 		}
 
-		bool CheckGameOver(){
+		bool CheckGameOver()
+		{
 			for (int i = 0; i < 4; i++)
 				for (int j = 0; j < 4; j++)
 					if (!board [i, j].HasValue)
@@ -123,22 +125,22 @@ namespace xam
 
 		#region MoveGeneric + LFUD
 
-		void MoveLeft ()
+		void MoveLeft()
 		{
-			MoveGeneric (
-				(i, j) => board[i, j],
-				(i, j, k) => board[i, j] = k,
+			MoveGeneric(
+				(i, j) => board [i, j],
+				(i, j, k) => board [i, j] = k,
 				true, 
 				(i, lim) => i < lim, 
 				0, 4, 
 				SetTileCoordsH);
 		}
 
-		void MoveRight ()
+		void MoveRight()
 		{
-			MoveGeneric (
-				(i, j) => board[i, j],
-				(i, j, k) => board[i, j] = k,
+			MoveGeneric(
+				(i, j) => board [i, j],
+				(i, j, k) => board [i, j] = k,
 				false, 
 				(i, lim) => i > lim, 
 				3, -1,
@@ -146,22 +148,22 @@ namespace xam
 				
 		}
 
-		void MoveUp ()
+		void MoveUp()
 		{
-			MoveGeneric (
-				(i, j) => board[j, i],
-				(i, j, k) => board[j, i] = k,
+			MoveGeneric(
+				(i, j) => board [j, i],
+				(i, j, k) => board [j, i] = k,
 				true, 
 				(i, lim) => i < lim, 
 				0, 4,
 				SetTileCoordsV);
 		}
 
-		void MoveDown ()
+		void MoveDown()
 		{
-			MoveGeneric (
-				(i, j) => board[j, i],
-				(i, j, k) => board[j, i] = k,
+			MoveGeneric(
+				(i, j) => board [j, i],
+				(i, j, k) => board [j, i] = k,
 				false, 
 				(i, lim) => i > lim, 
 				3, -1,
@@ -190,18 +192,14 @@ namespace xam
 		}
 
 		void MoveGeneric(Func<int, int, int?> boardAccess, Action<int, int, int?> boardSetter, bool incOrDec, 
-			Func<int, int, bool> limitCheck, int start, int end,
-			Action<bool, int, int, int, SlideTile> setTileCoords)
+		                 Func<int, int, bool> limitCheck, int start, int end,
+		                 Action<bool, int, int, int, SlideTile> setTileCoords)
 		{
-			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) 
-			{
-				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) 
-				{
+			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) {
+				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) {
 					int i = 1;//IncOrDec(incOrDec, start, 1);
-					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) 
-					{
-						if (boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) 
-						{
+					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) {
+						if (boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
 							boardSetter(row, col, boardAccess(row, IncOrDec(incOrDec, col, i)));
 							boardSetter(row, IncOrDec(incOrDec, col, i), null);
 
@@ -213,17 +211,15 @@ namespace xam
 					}
 
 					i = 1;//IncOrDec(incOrDec, start, 1);
-					while (boardAccess(row, col).HasValue 
-						&& limitCheck(IncOrDec(incOrDec, col, i), end)
-						&& !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) 
-					{
+					while (boardAccess(row, col).HasValue
+					       && limitCheck(IncOrDec(incOrDec, col, i), end)
+					       && !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
 						i++;//i = IncOrDec(incOrDec, i, 1);
 					}
 
-					if (boardAccess(row, col).HasValue 
-						&& limitCheck(IncOrDec(incOrDec, col, i), end) 
-						&& boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) 
-					{
+					if (boardAccess(row, col).HasValue
+					    && limitCheck(IncOrDec(incOrDec, col, i), end)
+					    && boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) {
 
 						boardSetter(row, col, boardAccess(row, col) * 2);
 						boardSetter(row, IncOrDec(incOrDec, col, i), null);
@@ -271,19 +267,28 @@ namespace xam
 
 		#endregion
 
+		#region TileClasses
 
-		public class NewTile {
+		public class NewTile
+		{
 			public int ToRow = 0;
 			public int ToCol = 0;
 		}
-		public class SlideTile:NewTile {
+
+		public class SlideTile:NewTile
+		{
 			public int FromRow = 0;
 			public int FromCol = 0;
 		}
-		public class CombineTile : SlideTile {
+
+		public class CombineTile : SlideTile
+		{
 			public int NewValue = 0;
 		}
 
+		#endregion
+
+		/* -- Move Function Developed for one direction first, then converted to a generic version.
 		void MoveLeftTest ()
 		{
 			for (int row = 0; row < 4; row++)
@@ -331,12 +336,13 @@ namespace xam
 
 			}
 		}
+		*/
 
 		#region RandomPlacement
 
-		Random r = new Random ();
+		Random r = new Random();
 
-		void RandomPlacement (int row, int col, int val)
+		void RandomPlacement(int row, int col, int val)
 		{
 			//int i = 0;
 
@@ -351,7 +357,7 @@ namespace xam
 				} while (board [row, col].HasValue);
 			}
 
-			board [row, col] = val > 0 ? val : (r.Next () % 2 +1) * 2;
+			board [row, col] = val > 0 ? val : (r.Next() % 2 + 1) * 2;
 
 			newTiles.Add(new NewTile() {
 				ToRow = row,
@@ -365,11 +371,9 @@ namespace xam
 
 		void SlideAndCombineTiles()
 		{
-			foreach (var slide in slideAndCombineTiles) 
-			{
+			foreach (var slide in slideAndCombineTiles) {
 
-				if(slide is CombineTile)
-				{
+				if (slide is CombineTile) {
 					var label = boardTiles [slide.ToRow, slide.ToCol];
 
 					label.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Blue);
@@ -379,9 +383,7 @@ namespace xam
 
 					boardTiles [slide.FromRow, slide.FromCol].RemoveFromSuperview();
 					boardTiles [slide.FromRow, slide.FromCol] = null;
-				}
-				else 
-				{
+				} else {
 					var label = boardTiles [slide.FromRow, slide.FromCol];
 			
 					label.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Red);
@@ -416,23 +418,23 @@ namespace xam
 		void NewTiles()
 		{
 			foreach (var nta in newTiles) {
-				UILabel l = DrawSquare(nta.ToRow, nta.ToCol, board[nta.ToRow, nta.ToCol].ToString(), null);
+				UILabel l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol].ToString(), null);
 				// starts tiny
 				l.Transform = CGAffineTransform.MakeScale(.2f, .2f);
 				UIView.Animate(0.1f,
-					() =>  {
+					() => {
 						//bigger
 						l.Transform = CGAffineTransform.MakeScale(1.25f, 1.25f);
 					}, 
-					() =>  {
+					() => {
 						UIView.Animate(0.2f, 
-							() =>  {
+							() => {
 								//then regular size
 								l.Transform = CGAffineTransform.MakeScale(1, 1);
 							});
 					}
 				);
-				boardTiles[nta.ToRow, nta.ToCol] = l;
+				boardTiles [nta.ToRow, nta.ToCol] = l;
 			}
 		
 			newTiles.Clear();
@@ -468,9 +470,9 @@ namespace xam
 		{
 			UILabel l2 = new UILabel(GetSquareFrame(row, col));
 
-			l2.TextAlignment =  UITextAlignment.Center;
+			l2.TextAlignment = UITextAlignment.Center;
 			l2.TextColor = UIColor.Black;
-				l2.Font = UIFont.FromName(@"Arial Rounded MT Bold", 20);
+			l2.Font = UIFont.FromName(@"Arial Rounded MT Bold", 20);
 			l2.Text = value.ToString();
 
 			//l2.BackgroundColor = UIColor.Yellow;
@@ -487,38 +489,50 @@ namespace xam
 
 		#endregion
 
-		private void DrawBlankBoard(){
+		#region DrawBlankBoard
 
-			for (int row = 0; row < 4; row++) 
-			{
-				for (int col = 0; col < 4; col++) 
-				{
-					DrawSquare (row, col, "", UIColor.LightGray);
+		private void DrawBlankBoard()
+		{
+			for (int row = 0; row < 4; row++) {
+				for (int col = 0; col < 4; col++) {
+					DrawSquare(row, col, "", UIColor.LightTextColor);
 				}
 			}
 		}
 
-		public string DebugBoard(){
+		#endregion
+
+		#region DebugBoard
+
+		public string DebugBoard()
+		{
 			string debug = "";
 
-			for(int i = 0;i < 4; i++)
-			{
-				for(int j = 0; j < 4; j++)
-					debug += board[i,j] + "|";
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++)
+					debug += board [i, j] + "|";
 				debug += "\n";
 			}
 
 			return debug;
 		}
+
+		#endregion
 	}
 
-	public class ColorHelper {
-		public static CGColor ConvertUIColorToCGColor(UIColor uiColor){
+	#region class ColorHelper - Converting UI to CG
+
+	public class ColorHelper
+	{
+		public static CGColor ConvertUIColorToCGColor(UIColor uiColor)
+		{
 			float r, g, b, a;
 			uiColor.GetRGBA(out r, out g, out b, out a);
-			return new CGColor(r,g,b,a);
+			return new CGColor(r, g, b, a);
 		}
 	}
+
+	#endregion
 	
 }
 

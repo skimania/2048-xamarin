@@ -1,14 +1,14 @@
 # Version: 7.4.0.108 (77efa3f)
-# [first argument, ignore] # /Users/skimania/Projects/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/mtouch.exe
+# [first argument, ignore] # /Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/mtouch.exe
 /Library/Frameworks/Xamarin.iOS.framework/Versions/7.4.0.108/bin/mtouch \
 	-sdkroot \
 	/Applications/Xcode.app/Contents/Developer \
 	--cache \
-	/Users/skimania/Projects/2048-xam/2048-xam/obj/iPhoneSimulator/Debug/mtouch-cache \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/obj/iPhoneSimulator/Debug/mtouch-cache \
 	--nomanifest \
 	--nosign \
 	-sim \
-	/Users/skimania/Projects/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/2048xam.app \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/2048xam.app \
 	-r \
 	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/System.dll \
 	-r \
@@ -24,4 +24,4 @@
 	-targetver \
 	7.0 \
 	--abi=i386 \
-	/Users/skimania/Projects/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/2048xam.exe \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhoneSimulator/Debug/2048xam.exe \

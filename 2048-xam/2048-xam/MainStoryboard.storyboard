@@ -20,7 +20,7 @@
                             <view contentMode="scaleToFill" id="14" translatesAutoresizingMaskIntoConstraints="NO" fixedFrame="YES">
                                 <rect key="frame" x="20" y="154" width="280" height="280"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <color key="backgroundColor" customColorSpace="calibratedWhite" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                                <color key="backgroundColor" customColorSpace="calibratedWhite" colorSpace="calibratedRGB" red="0.75294117647058822" green="0.75294117647058822" blue="0.75294117647058822" alpha="1"/>
                                 <subviews>
                                 </subviews>
                                 <constraints>
@@ -35,15 +35,6 @@
                                 <nil key="highlightedColor"/>
                                 <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="1" lineBreakMode="charWrapping" minimumFontSize="10" id="20" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" textAlignment="left" numberOfLines="4">
-                                <rect key="frame" x="56" y="452" width="96" height="87"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" colorSpace="calibratedRGB" red="1" green="1" blue="0" alpha="1"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <nil key="highlightedColor"/>
-                                <rect key="contentStretch" x="0.0" y="0.0" width="1" height="0.0"/>
-                            </label>
                         </subviews>
                         <constraints>
                         </constraints>
@@ -51,7 +42,6 @@
                     <connections>
                         <outlet property="boardView" destination="14" id="name-outlet-14"/>
                         <outlet property="labelScore" destination="16" id="name-outlet-16"/>
-                        <outlet property="labelDebug" destination="20" id="name-outlet-20"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
