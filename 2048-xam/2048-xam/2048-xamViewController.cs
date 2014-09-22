@@ -20,6 +20,13 @@ namespace xam
 
 		#endregion`
 
+		// TODO: Shrink font to fit in box as text is longer.
+		// TODO: Layout top of screen
+		// TODO: Add scorekeeping
+		// TODO: Add highscore list / score tracking (Good excersice in data perstiance on an iPhone)
+		// TODO: Add share to twitter/facebook (learn that integration)
+		// TODO: Challenges, etc.
+
 		#region Fields
 
 		bool gameOver = true;
@@ -28,15 +35,50 @@ namespace xam
 		UILabel[,] boardTiles = new UILabel[4, 4];
 		List<NewTile> newTiles = new List<NewTile>();
 		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
-		//List<CombineTile> combineTiles = new List<CombineTile>();
 
 		#endregion
+
+		Dictionary<int, ColorPair> tileColors = new Dictionary<int, ColorPair>();
+
+		class ColorPair 
+		{
+			public CGColor BackColor;
+			public CGColor TextColor;
+
+			public ColorPair(CGColor backColor, CGColor textColor)
+			{
+				this.BackColor = backColor;
+				this.TextColor = textColor;
+			}
+		}
+
+		private void SetupTileColors()
+		{
+			tileColors.Add(2,    new ColorPair(new CGColor(0.93f, 0.93f, 0.93f, 1), new CGColor(0,0,0,1)));
+			tileColors.Add(4,    new ColorPair(new CGColor(0.82f, 0.82f, 0.82f, 1), new CGColor(0,0,0,1)));
+			tileColors.Add(8,    new ColorPair(new CGColor(0.95f, 0.74f, 0.37f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(16,   new ColorPair(new CGColor(0.96f, 0.67f, 0.20f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(32,   new ColorPair(new CGColor(0.99f, 0.55f, 0.51f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(64,   new ColorPair(new CGColor(0.99f, 0.35f, 0.18f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(128,  new ColorPair(new CGColor(0.95f, 0.87f, 0.40f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(256,  new ColorPair(new CGColor(1.00f, 0.92f, 0.43f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(512,  new ColorPair(new CGColor(0.99f, 0.15f, 0.17f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(1024, new ColorPair(new CGColor(1.00f, 0.91f, 0.58f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(2048, new ColorPair(new CGColor(0.52f, 0.99f, 0.39f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(4096, new ColorPair(new CGColor(0.36f, 0.60f, 0.99f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(8196, new ColorPair(new CGColor(0.99f, 0.42f, 0.95f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(16384,new ColorPair(new CGColor(0.43f, 1.00f, 0.90f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(32768,new ColorPair(new CGColor(0.24f, 0.99f, 0.49f, 1), new CGColor(1,1,1,1)));
+
+		}
 
 		#region View lifecycle
 
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
+
+			SetupTileColors();
 
 			gameOver = false;
 
@@ -369,6 +411,13 @@ namespace xam
 
 		#region RunAnimations
 
+		void SetTileColor(int value, UILabel label)
+		{
+			var col = tileColors[value];
+			label.Layer.BackgroundColor = col.BackColor;
+			label.TextColor = new UIColor(col.TextColor);
+		}
+
 		void SlideAndCombineTiles()
 		{
 			foreach (var slide in slideAndCombineTiles) {
@@ -376,17 +425,17 @@ namespace xam
 				if (slide is CombineTile) {
 					var label = boardTiles [slide.ToRow, slide.ToCol];
 
-					label.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Blue);
-					label.Text = (slide as CombineTile).NewValue.ToString();
+					SetTileColor(board[slide.ToRow, slide.ToCol].Value, label);
 
-					//boardTiles[slide.ToRow, slide.ToCol] = label;
+					label.Text = (slide as CombineTile).NewValue.ToString();
 
 					boardTiles [slide.FromRow, slide.FromCol].RemoveFromSuperview();
 					boardTiles [slide.FromRow, slide.FromCol] = null;
 				} else {
 					var label = boardTiles [slide.FromRow, slide.FromCol];
 			
-					label.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Red);
+					//SetTileColor(board[slide.ToRow, slide.ToCol].Value, label);
+
 					label.Frame = GetSquareFrame(slide.ToRow, slide.ToCol);
 
 					boardTiles [slide.ToRow, slide.ToCol] = label;
@@ -419,6 +468,9 @@ namespace xam
 		{
 			foreach (var nta in newTiles) {
 				UILabel l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol].ToString(), null);
+
+				SetTileColor(board[nta.ToRow, nta.ToCol].Value, l);
+
 				// starts tiny
 				l.Transform = CGAffineTransform.MakeScale(.2f, .2f);
 				UIView.Animate(0.1f,
@@ -477,7 +529,10 @@ namespace xam
 
 			//l2.BackgroundColor = UIColor.Yellow;
 			l2.Layer.CornerRadius = 4;
-			l2.Layer.BorderWidth = 2;
+
+			if(value != "")
+				l2.Layer.BorderWidth = 2;
+
 			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.Yellow);
 			l2.Layer.BorderColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Black);
 			l2.Layer.AllowsEdgeAntialiasing = true;
@@ -493,9 +548,12 @@ namespace xam
 
 		private void DrawBlankBoard()
 		{
+			boardView.Layer.CornerRadius = 5;
+			boardView.Layer.BackgroundColor = new CGColor(0.7f, 0.7f, 0.7f, 1);
+
 			for (int row = 0; row < 4; row++) {
 				for (int col = 0; col < 4; col++) {
-					DrawSquare(row, col, "", UIColor.LightTextColor);
+					DrawSquare(row, col, "", new UIColor(0.77f, 0.77f, 0.77f, 1));
 				}
 			}
 		}
