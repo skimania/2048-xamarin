@@ -47,8 +47,8 @@ namespace xam
 
 		bool gameOver = true;
 
-		int?[,] board = new int?[5, 5];
-		UILabel[,] boardTiles = new UILabel[5, 5];
+		Card[,] board = new Card[5, 5];
+		UIView[,] boardTiles = new UIView[5, 5];
 		List<NewTile> newTiles = new List<NewTile>();
 		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
 
@@ -70,9 +70,11 @@ namespace xam
 			{
 				var list = new List<HighScore>();
 
-				if (File.Exists(filePath)) {
+				if (File.Exists(filePath))
+				{
 					string[] lines = File.ReadAllLines(filePath);
-					foreach (var line in lines) {
+					foreach (var line in lines)
+					{
 						var chunks = line.Split(',');
 						list.Add(new HighScore() {
 							Score = int.Parse(chunks [0]),
@@ -90,8 +92,10 @@ namespace xam
 
 			public static void SaveHighScore(int score, DateTime date, List<HighScore> scores)
 			{
-				using (var fd = new StreamWriter(filePath)) {
-					foreach (var s in scores) {
+				using (var fd = new StreamWriter(filePath))
+				{
+					foreach (var s in scores)
+					{
 						fd.WriteLine(s.Score + "," + s.Date.ToShortDateString());
 					}
 
@@ -102,9 +106,40 @@ namespace xam
 
 		Dictionary<int, ColorPair> tileColors = new Dictionary<int, ColorPair>();
 
-		class Card
+		public enum Suit
 		{
+			Diamond,
+			Club,
+			Heart,
+			Spade
+		}
 
+		public enum Rank
+		{
+			_2 = 2,
+			_3,
+			_4,
+			_5,
+			_6,
+			_7,
+			_8,
+			_9,
+			_10,
+			Jack,
+			Queen,
+			King,
+			Ace
+		}
+
+		public class Card
+		{
+			public Suit Suit;
+			public Rank Rank;
+
+			public string ToString()
+			{
+				return Rank.ToString() + " of " + Suit;
+			}
 		}
 
 		class ColorPair
@@ -136,7 +171,6 @@ namespace xam
 			tileColors.Add(8196, new ColorPair(new CGColor(0.99f, 0.42f, 0.95f, 1), new CGColor(1, 1, 1, 1)));
 			tileColors.Add(16384, new ColorPair(new CGColor(0.43f, 1.00f, 0.90f, 1), new CGColor(1, 1, 1, 1)));
 			tileColors.Add(32768, new ColorPair(new CGColor(0.24f, 0.99f, 0.49f, 1), new CGColor(1, 1, 1, 1)));
-
 		}
 
 		#region View lifecycle
@@ -151,6 +185,9 @@ namespace xam
 
 			DrawBlankBoard();
 
+			RandomPlacement(-1, -1, -1);
+			RandomPlacement(-1, -1, -1);
+			RandomPlacement(-1, -1, -1);
 			RandomPlacement(-1, -1, -1);
 			RandomPlacement(-1, -1, -1);
 //			RandomPlacement (0,0,2);
@@ -190,11 +227,11 @@ namespace xam
 
 		void SwipeHandler(UISwipeGestureRecognizer recognizer)
 		{
-
 			if (gameOver)
 				return;
 
-			switch (recognizer.Direction) {
+			switch (recognizer.Direction)
+			{
 			case UISwipeGestureRecognizerDirection.Left:
 				MoveLeft();
 				break;
@@ -214,7 +251,8 @@ namespace xam
 
 			UpdateScoreLabels();
 
-			if (CheckGameOver()) {
+			if (CheckGameOver())
+			{
 				// TODO: Direct to a new screen, with score and try again buttons.
 				labelScore.Text = "Game Over";
 				gameOver = true;
@@ -225,7 +263,7 @@ namespace xam
 		{
 			for (int i = 0; i < 4; i++)
 				for (int j = 0; j < 4; j++)
-					if (!board [i, j].HasValue)
+					if (board [i, j] == null)
 						return false;
 
 			// TODO: Add logic to test if combines are possible.
@@ -244,7 +282,7 @@ namespace xam
 				(i, j, k) => board [i, j] = k,
 				true, 
 				(i, lim) => i < lim, 
-				0, 4, 
+				0, 5, 
 				SetTileCoordsH);
 		}
 
@@ -255,7 +293,7 @@ namespace xam
 				(i, j, k) => board [i, j] = k,
 				false, 
 				(i, lim) => i > lim, 
-				3, -1,
+				4, -1,
 				SetTileCoordsH);
 				
 		}
@@ -267,7 +305,7 @@ namespace xam
 				(i, j, k) => board [j, i] = k,
 				true, 
 				(i, lim) => i < lim, 
-				0, 4,
+				0, 5,
 				SetTileCoordsV);
 		}
 
@@ -278,7 +316,7 @@ namespace xam
 				(i, j, k) => board [j, i] = k,
 				false, 
 				(i, lim) => i > lim, 
-				3, -1,
+				4, -1,
 				SetTileCoordsV);
 		}
 
@@ -303,15 +341,19 @@ namespace xam
 			tile.ToCol = row;
 		}
 
-		void MoveGeneric(Func<int, int, int?> boardAccess, Action<int, int, int?> boardSetter, bool incOrDec, 
+		void MoveGeneric(Func<int, int, Card> boardAccess, Action<int, int, Card> boardSetter, bool incOrDec, 
 		                 Func<int, int, bool> limitCheck, int start, int end,
 		                 Action<bool, int, int, int, SlideTile> setTileCoords)
 		{
-			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) {
-				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) {
+			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1))
+			{
+				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1))
+				{
 					int i = 1;
-					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) {
-						if (boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
+					while (boardAccess(row, col) == null && limitCheck(IncOrDec(incOrDec, col, i), end))
+					{
+						if (boardAccess(row, IncOrDec(incOrDec, col, i)) != null)
+						{
 							boardSetter(row, col, boardAccess(row, IncOrDec(incOrDec, col, i)));
 							boardSetter(row, IncOrDec(incOrDec, col, i), null);
 
@@ -321,6 +363,10 @@ namespace xam
 						}
 						i++;
 					}
+
+					/*
+
+					// We are no longer interested in combining cards.
 
 					i = 1;
 					while (boardAccess(row, col).HasValue
@@ -343,6 +389,7 @@ namespace xam
 						// NOTE: WOOOOOOOOOO!!!
 						score += tile.NewValue;
 					}
+					*/
 				}
 			}
 		}
@@ -363,10 +410,12 @@ namespace xam
 			public int FromCol = 0;
 		}
 
+		/*
 		public class CombineTile : SlideTile
 		{
 			public int NewValue = 0;
 		}
+		*/
 
 		#endregion
 
@@ -434,17 +483,23 @@ namespace xam
 			int tests = 0;
 
 			// allow manual override for testing.
-			if (row < 0) {
-				do {
-					row = (r.Next() % 4);
-					col = (r.Next() % 4);
+			if (row < 0)
+			{
+				do
+				{
+					row = (r.Next() % 5);
+					col = (r.Next() % 5);
 					tests++;
-				} while (board [row, col].HasValue && tests < 16);
+				} while (board [row, col] != null && tests < 25);
 			}
 
 			// we might let them play with a full board if swipes are possible, but not be able to place squares.
-			if (tests <= 16) {
-				var newValue = val > 0 ? val : (r.Next() % 2 + 1) * 2;
+			if (tests <= 25)
+			{
+				var newValue = new Card() {
+					Suit = (Suit)(r.Next() % 4),// Suit.Club,
+					Rank = (Rank)(r.Next() % 13 + 2)
+				};//val > 0 ? val : (r.Next() % 2 + 1) * 2;
 
 				board [row, col] = newValue;
 
@@ -471,18 +526,21 @@ namespace xam
 
 		void SlideAndCombineTiles()
 		{
-			foreach (var slide in slideAndCombineTiles) {
+			foreach (var slide in slideAndCombineTiles)
+			{
 
-				if (slide is CombineTile) {
+				/*if (slide is CombineTile)
+				{
 					var label = boardTiles [slide.ToRow, slide.ToCol];
 
-					SetTileColor(board [slide.ToRow, slide.ToCol].Value, label);
+					//SetTileColor(board [slide.ToRow, slide.ToCol], label);
 
 					label.Text = (slide as CombineTile).NewValue.ToString();
 
 					boardTiles [slide.FromRow, slide.FromCol].RemoveFromSuperview();
 					boardTiles [slide.FromRow, slide.FromCol] = null;
-				} else {
+				} else*/
+				{
 					var label = boardTiles [slide.FromRow, slide.FromCol];
 			
 					//SetTileColor(board[slide.ToRow, slide.ToCol].Value, label);
@@ -499,21 +557,25 @@ namespace xam
 
 		void NewTiles()
 		{
-			foreach (var nta in newTiles) {
-				UILabel l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol].ToString(), null);
+			foreach (var nta in newTiles)
+			{
+				var l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol], null);
 
-				SetTileColor(board [nta.ToRow, nta.ToCol].Value, l);
+				//SetTileColor(board [nta.ToRow, nta.ToCol].Value, l);
 
 				// starts tiny
 				l.Transform = CGAffineTransform.MakeScale(.2f, .2f);
 				UIView.Animate(0.1f,
-					() => {
+					() =>
+					{
 						//bigger
 						l.Transform = CGAffineTransform.MakeScale(1.25f, 1.25f);
 					}, 
-					() => {
+					() =>
+					{
 						UIView.Animate(0.2f, 
-							() => {
+							() =>
+							{
 								//then regular size
 								l.Transform = CGAffineTransform.MakeScale(1, 1);
 							});
@@ -529,13 +591,15 @@ namespace xam
 
 		public void Animations()
 		{
-			lock (animeLockObject) {
+			lock (animeLockObject)
+			{
 				UIView.Animate(.2f,
-					() => {
+					() =>
+					{
 						SlideAndCombineTiles();
-						//SlideTiles();
 					},
-					() => {
+					() =>
+					{
 						NewTiles();
 					}
 				);
@@ -548,7 +612,8 @@ namespace xam
 		{
 			labelScore.Text = score.ToString();
 
-			if (score > highScore) {
+			if (score > highScore)
+			{
 				highScore = score;
 				HighScore.SaveHighScore(score, DateTime.Today, highScores);
 			}
@@ -563,24 +628,43 @@ namespace xam
 			return new RectangleF(20 + 50 * col, 20 + 64 * row, 40, 54);
 		}
 
-		public UILabel DrawSquare(int row, int col, string value, UIColor backColor)
+		public UIView DrawSquare(int row, int col, Card card, UIColor backColor)
 		{
-			UILabel l2 = new UILabel(GetSquareFrame(row, col));
+			UIView l2 = new UIView(GetSquareFrame(row, col));
 
-			l2.TextAlignment = UITextAlignment.Center;
-			l2.TextColor = UIColor.Black;
-			l2.Font = UIFont.FromName(@"Futura", 20);
-			l2.Text = value.ToString();
+
 
 			//l2.BackgroundColor = UIColor.Yellow;
 			l2.Layer.CornerRadius = 4;
 
-			if (value != "")
-				l2.Layer.BorderWidth = 2;
+			if (card != null)
+			{
+				UIImageView img = new UIImageView(
+					                  UIImage.FromBundle(card.Suit.ToString().ToLower() + ".png"));
 
-			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.Yellow);
+
+				UILabel lbl = new UILabel(new RectangleF(0, 0, 40, 54));
+
+				lbl.Text = card.Rank.ToString().Replace("_", "").Replace("ack", "").Replace("ueen", "").Replace("ing", "").Replace("ce", "");// value.ToString();
+
+				lbl.AdjustsFontSizeToFitWidth = true;
+				lbl.Lines = 1;
+
+				lbl.TextAlignment = UITextAlignment.Center;
+				lbl.TextColor = UIColor.White;
+				lbl.Font = UIFont.FromName(@"Futura", 20);
+
+
+
+				l2.Layer.BorderWidth = 2;
+				l2.AddSubview(img);
+				l2.AddSubview(lbl);
+			}
+
+			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.White);
 			l2.Layer.BorderColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Black);
 			l2.Layer.AllowsEdgeAntialiasing = true;
+
 
 			boardView.Add(l2);
 
@@ -596,9 +680,11 @@ namespace xam
 			boardView.Layer.CornerRadius = 5;
 			boardView.Layer.BackgroundColor = new CGColor(0.7f, 0.7f, 0.7f, 1);
 
-			for (int row = 0; row < 5; row++) {
-				for (int col = 0; col < 5; col++) {
-					DrawSquare(row, col, "", new UIColor(0.77f, 0.77f, 0.77f, 1));
+			for (int row = 0; row < 5; row++)
+			{
+				for (int col = 0; col < 5; col++)
+				{
+					DrawSquare(row, col, null, new UIColor(0.77f, 0.77f, 0.77f, 1));
 				}
 			}
 		}
@@ -611,7 +697,8 @@ namespace xam
 		{
 			string debug = "";
 
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 4; i++)
+			{
 				for (int j = 0; j < 4; j++)
 					debug += board [i, j] + "|";
 				debug += "\n";
