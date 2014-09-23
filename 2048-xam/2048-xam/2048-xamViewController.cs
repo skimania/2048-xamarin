@@ -26,12 +26,29 @@ namespace xam
 		// TODO: Add share to twitter/facebook (learn that integration)
 		// TODO: Challenges, etc.
 
+		/* **************************************
+		 * TODO:
+		 * 
+		 * Convert to Poker Game Project.
+		 * 
+		 * 1. Make board 5x5
+		 * 2. Render cards instead of numbers
+		 * 3. Change slide and combine logic as follows:
+		 * 		a. No more combining
+		 * 		b. After sliding test complete rows for poker hands (cards in two rows count twice and double score)
+		 * 		c. Jokers wild.
+		 * 		d. Preview of next 2 cards?
+		 * 		e. "Magic" earned after XXX to allow moving cards, sorting cards, etc.
+		 * 4. Update scoring logic to score value of hands
+		 * 
+		 * **************************************/
+
 		#region Fields
 
 		bool gameOver = true;
 
-		int?[,] board = new int?[4, 4];
-		UILabel[,] boardTiles = new UILabel[4, 4];
+		int?[,] board = new int?[5, 5];
+		UILabel[,] boardTiles = new UILabel[5, 5];
 		List<NewTile> newTiles = new List<NewTile>();
 		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
 
@@ -545,7 +562,7 @@ namespace xam
 
 		static RectangleF GetSquareFrame(int row, int col)
 		{
-			return new RectangleF(20 + 62 * col, 20 + 62 * row, 52, 52);
+			return new RectangleF(20 + 50 * col, 20 + 64 * row, 40, 54);
 		}
 
 		public UILabel DrawSquare(int row, int col, string value, UIColor backColor)
@@ -581,8 +598,8 @@ namespace xam
 			boardView.Layer.CornerRadius = 5;
 			boardView.Layer.BackgroundColor = new CGColor(0.7f, 0.7f, 0.7f, 1);
 
-			for (int row = 0; row < 4; row++) {
-				for (int col = 0; col < 4; col++) {
+			for (int row = 0; row < 5; row++) {
+				for (int col = 0; col < 5; col++) {
 					DrawSquare(row, col, "", new UIColor(0.77f, 0.77f, 0.77f, 1));
 				}
 			}
