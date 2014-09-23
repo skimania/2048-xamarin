@@ -1,22 +1,22 @@
-# Version: 7.2.6.28 (606f31a)
-# [first argument, ignore] # /Users/skimania/Projects/2048-xam/2048-xam/bin/iPhone/Debug/mtouch.exe
-/Developer/MonoTouch/usr/bin/mtouch \
+# Version: 8.0.0.62 (8bd8158)
+# [first argument, ignore] # /Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhone/Debug/mtouch.exe
+/Library/Frameworks/Xamarin.iOS.framework/Versions/8.0.0.62/bin/mtouch \
 	-sdkroot \
 	/Applications/Xcode.app/Contents/Developer \
 	--cache \
-	/Users/skimania/Projects/2048-xam/2048-xam/obj/iPhone/Debug/mtouch-cache \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/obj/iPhone/Debug/mtouch-cache \
 	--nomanifest \
 	--nosign \
 	-dev \
-	/Users/skimania/Projects/2048-xam/2048-xam/bin/iPhone/Debug/2048xam.app \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhone/Debug/2048xam.app \
 	-r \
-	/Developer/MonoTouch/usr/lib/mono/2.1/System.dll \
+	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/System.dll \
 	-r \
-	/Developer/MonoTouch/usr/lib/mono/2.1/System.Xml.dll \
+	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/System.Xml.dll \
 	-r \
-	/Developer/MonoTouch/usr/lib/mono/2.1/System.Core.dll \
+	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/System.Core.dll \
 	-r \
-	/Developer/MonoTouch/usr/lib/mono/2.1/monotouch.dll \
+	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/monotouch.dll \
 	-debug \
 	-linksdkonly \
 	-sdk \
@@ -24,4 +24,4 @@
 	-targetver \
 	7.0 \
 	--abi=armv7 \
-	/Users/skimania/Projects/2048-xam/2048-xam/bin/iPhone/Debug/2048xam.exe \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhone/Debug/2048xam.exe \
