@@ -59,7 +59,8 @@ namespace xam
 
 		#endregion
 
-		class HighScore {
+		class HighScore
+		{
 			public int Score;
 			public DateTime Date;
 
@@ -89,10 +90,8 @@ namespace xam
 
 			public static void SaveHighScore(int score, DateTime date, List<HighScore> scores)
 			{
-				using(var fd = new StreamWriter(filePath))
-				{
-					foreach (var s in scores) 
-					{
+				using (var fd = new StreamWriter(filePath)) {
+					foreach (var s in scores) {
 						fd.WriteLine(s.Score + "," + s.Date.ToShortDateString());
 					}
 
@@ -103,7 +102,12 @@ namespace xam
 
 		Dictionary<int, ColorPair> tileColors = new Dictionary<int, ColorPair>();
 
-		class ColorPair 
+		class Card
+		{
+
+		}
+
+		class ColorPair
 		{
 			public CGColor BackColor;
 			public CGColor TextColor;
@@ -117,21 +121,21 @@ namespace xam
 
 		private void SetupTileColors()
 		{
-			tileColors.Add(2,    new ColorPair(new CGColor(0.93f, 0.93f, 0.93f, 1), new CGColor(0,0,0,1)));
-			tileColors.Add(4,    new ColorPair(new CGColor(0.80f, 0.80f, 0.82f, 1), new CGColor(0,0,0,1)));
-			tileColors.Add(8,    new ColorPair(new CGColor(0.95f, 0.74f, 0.37f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(16,   new ColorPair(new CGColor(0.96f, 0.67f, 0.20f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(32,   new ColorPair(new CGColor(0.99f, 0.55f, 0.51f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(64,   new ColorPair(new CGColor(0.99f, 0.35f, 0.18f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(128,  new ColorPair(new CGColor(0.95f, 0.87f, 0.40f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(256,  new ColorPair(new CGColor(1.00f, 0.92f, 0.43f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(512,  new ColorPair(new CGColor(0.99f, 0.15f, 0.17f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(1024, new ColorPair(new CGColor(1.00f, 0.91f, 0.58f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(2048, new ColorPair(new CGColor(0.52f, 0.99f, 0.39f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(4096, new ColorPair(new CGColor(0.36f, 0.60f, 0.99f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(8196, new ColorPair(new CGColor(0.99f, 0.42f, 0.95f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(16384,new ColorPair(new CGColor(0.43f, 1.00f, 0.90f, 1), new CGColor(1,1,1,1)));
-			tileColors.Add(32768,new ColorPair(new CGColor(0.24f, 0.99f, 0.49f, 1), new CGColor(1,1,1,1)));
+			tileColors.Add(2, new ColorPair(new CGColor(0.93f, 0.93f, 0.93f, 1), new CGColor(0, 0, 0, 1)));
+			tileColors.Add(4, new ColorPair(new CGColor(0.80f, 0.80f, 0.82f, 1), new CGColor(0, 0, 0, 1)));
+			tileColors.Add(8, new ColorPair(new CGColor(0.95f, 0.74f, 0.37f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(16, new ColorPair(new CGColor(0.96f, 0.67f, 0.20f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(32, new ColorPair(new CGColor(0.99f, 0.55f, 0.51f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(64, new ColorPair(new CGColor(0.99f, 0.35f, 0.18f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(128, new ColorPair(new CGColor(0.95f, 0.87f, 0.40f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(256, new ColorPair(new CGColor(1.00f, 0.92f, 0.43f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(512, new ColorPair(new CGColor(0.99f, 0.15f, 0.17f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(1024, new ColorPair(new CGColor(1.00f, 0.91f, 0.58f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(2048, new ColorPair(new CGColor(0.52f, 0.99f, 0.39f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(4096, new ColorPair(new CGColor(0.36f, 0.60f, 0.99f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(8196, new ColorPair(new CGColor(0.99f, 0.42f, 0.95f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(16384, new ColorPair(new CGColor(0.43f, 1.00f, 0.90f, 1), new CGColor(1, 1, 1, 1)));
+			tileColors.Add(32768, new ColorPair(new CGColor(0.24f, 0.99f, 0.49f, 1), new CGColor(1, 1, 1, 1)));
 
 		}
 
@@ -302,13 +306,10 @@ namespace xam
 		                 Func<int, int, bool> limitCheck, int start, int end,
 		                 Action<bool, int, int, int, SlideTile> setTileCoords)
 		{
-			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) 
-			{
-				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) 
-				{
+			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) {
+				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) {
 					int i = 1;
-					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) 
-					{
+					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) {
 						if (boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
 							boardSetter(row, col, boardAccess(row, IncOrDec(incOrDec, col, i)));
 							boardSetter(row, IncOrDec(incOrDec, col, i), null);
@@ -323,15 +324,13 @@ namespace xam
 					i = 1;
 					while (boardAccess(row, col).HasValue
 					       && limitCheck(IncOrDec(incOrDec, col, i), end)
-					       && !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) 
-					{
+					       && !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
 						i++;
 					}
 
 					if (boardAccess(row, col).HasValue
 					    && limitCheck(IncOrDec(incOrDec, col, i), end)
-					    && boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) 
-					{
+					    && boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) {
 						boardSetter(row, col, boardAccess(row, col) * 2);
 						boardSetter(row, IncOrDec(incOrDec, col, i), null);
 
@@ -443,8 +442,7 @@ namespace xam
 			}
 
 			// we might let them play with a full board if swipes are possible, but not be able to place squares.
-			if (tests <= 16) 
-			{
+			if (tests <= 16) {
 				var newValue = val > 0 ? val : (r.Next() % 2 + 1) * 2;
 
 				board [row, col] = newValue;
@@ -465,7 +463,7 @@ namespace xam
 
 		void SetTileColor(int value, UILabel label)
 		{
-			var col = tileColors[value];
+			var col = tileColors [value];
 			label.Layer.BackgroundColor = col.BackColor;
 			label.TextColor = new UIColor(col.TextColor);
 		}
@@ -477,7 +475,7 @@ namespace xam
 				if (slide is CombineTile) {
 					var label = boardTiles [slide.ToRow, slide.ToCol];
 
-					SetTileColor(board[slide.ToRow, slide.ToCol].Value, label);
+					SetTileColor(board [slide.ToRow, slide.ToCol].Value, label);
 
 					label.Text = (slide as CombineTile).NewValue.ToString();
 
@@ -503,7 +501,7 @@ namespace xam
 			foreach (var nta in newTiles) {
 				UILabel l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol].ToString(), null);
 
-				SetTileColor(board[nta.ToRow, nta.ToCol].Value, l);
+				SetTileColor(board [nta.ToRow, nta.ToCol].Value, l);
 
 				// starts tiny
 				l.Transform = CGAffineTransform.MakeScale(.2f, .2f);
@@ -549,8 +547,7 @@ namespace xam
 		{
 			labelScore.Text = score.ToString();
 
-			if (score > highScore)
-			{
+			if (score > highScore) {
 				highScore = score;
 				HighScore.SaveHighScore(score, DateTime.Today, highScores);
 			}
@@ -577,7 +574,7 @@ namespace xam
 			//l2.BackgroundColor = UIColor.Yellow;
 			l2.Layer.CornerRadius = 4;
 
-			if(value != "")
+			if (value != "")
 				l2.Layer.BorderWidth = 2;
 
 			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.Yellow);
