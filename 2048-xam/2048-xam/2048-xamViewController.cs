@@ -190,6 +190,7 @@ namespace xam
 
 		void SwipeHandler(UISwipeGestureRecognizer recognizer)
 		{
+
 			if (gameOver)
 				return;
 
