@@ -20,7 +20,15 @@ namespace xam
 
 		[Outlet]
 		[GeneratedCode ("iOS Designer", "1.0")]
+		UILabel labelBest { get; set; }
+
+		[Outlet]
+		[GeneratedCode ("iOS Designer", "1.0")]
 		UILabel labelScore { get; set; }
+
+		[Outlet]
+		[GeneratedCode ("iOS Designer", "1.0")]
+		UILabel labelTitle { get; set; }
 
 		void ReleaseDesignerOutlets ()
 		{
@@ -28,9 +36,17 @@ namespace xam
 				boardView.Dispose ();
 				boardView = null;
 			}
+			if (labelBest != null) {
+				labelBest.Dispose ();
+				labelBest = null;
+			}
 			if (labelScore != null) {
 				labelScore.Dispose ();
 				labelScore = null;
+			}
+			if (labelTitle != null) {
+				labelTitle.Dispose ();
+				labelTitle = null;
 			}
 		}
 	}

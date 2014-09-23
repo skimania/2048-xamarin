@@ -7,6 +7,8 @@ using MonoTouch.UIKit;
 
 using MonoTouch.CoreGraphics;
 
+using System.IO;
+
 namespace xam
 {
 	public partial class _048_xamViewController : UIViewController
@@ -21,9 +23,6 @@ namespace xam
 		#endregion`
 
 		// TODO: Shrink font to fit in box as text is longer.
-		// TODO: Layout top of screen
-		// TODO: Add scorekeeping
-		// TODO: Add highscore list / score tracking (Good excersice in data perstiance on an iPhone)
 		// TODO: Add share to twitter/facebook (learn that integration)
 		// TODO: Challenges, etc.
 
@@ -36,7 +35,54 @@ namespace xam
 		List<NewTile> newTiles = new List<NewTile>();
 		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
 
+		int score = 0;
+		int highScore = 0;
+
+		List<HighScore> highScores;
+
 		#endregion
+
+		class HighScore {
+			public int Score;
+			public DateTime Date;
+
+			static string filePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "HighScores.md";
+
+			public static List<HighScore> LoadScores(ref int highScore)
+			{
+				var list = new List<HighScore>();
+
+				if (File.Exists(filePath)) {
+					string[] lines = File.ReadAllLines(filePath);
+					foreach (var line in lines) {
+						var chunks = line.Split(',');
+						list.Add(new HighScore() {
+							Score = int.Parse(chunks [0]),
+							Date = DateTime.Parse(chunks [1])
+						});
+					}
+
+					list.Sort((x, y) => x.Score.CompareTo(y.Score));
+
+					highScore = list [0].Score;
+				}
+
+				return list;
+			}
+
+			public static void SaveHighScore(int score, DateTime date, List<HighScore> scores)
+			{
+				using(var fd = new StreamWriter(filePath))
+				{
+					foreach (var s in scores) 
+					{
+						fd.WriteLine(s.Score + "," + s.Date.ToShortDateString());
+					}
+
+					fd.WriteLine(score + "," + date.ToShortDateString());
+				}
+			}
+		}
 
 		Dictionary<int, ColorPair> tileColors = new Dictionary<int, ColorPair>();
 
@@ -55,7 +101,7 @@ namespace xam
 		private void SetupTileColors()
 		{
 			tileColors.Add(2,    new ColorPair(new CGColor(0.93f, 0.93f, 0.93f, 1), new CGColor(0,0,0,1)));
-			tileColors.Add(4,    new ColorPair(new CGColor(0.82f, 0.82f, 0.82f, 1), new CGColor(0,0,0,1)));
+			tileColors.Add(4,    new ColorPair(new CGColor(0.80f, 0.80f, 0.82f, 1), new CGColor(0,0,0,1)));
 			tileColors.Add(8,    new ColorPair(new CGColor(0.95f, 0.74f, 0.37f, 1), new CGColor(1,1,1,1)));
 			tileColors.Add(16,   new ColorPair(new CGColor(0.96f, 0.67f, 0.20f, 1), new CGColor(1,1,1,1)));
 			tileColors.Add(32,   new ColorPair(new CGColor(0.99f, 0.55f, 0.51f, 1), new CGColor(1,1,1,1)));
@@ -90,8 +136,12 @@ namespace xam
 //			RandomPlacement (0,1,2);
 //			RandomPlacement (0,2,2);
 //			RandomPlacement (0,3,2);
+
 			Animations();
 
+			highScores = HighScore.LoadScores(ref highScore);
+
+			UpdateScoreLabels();
 		}
 
 		public override void ViewDidLoad()
@@ -119,12 +169,8 @@ namespace xam
 
 		void SwipeHandler(UISwipeGestureRecognizer recognizer)
 		{
-
 			if (gameOver)
 				return;
-
-			labelScore.Text = recognizer.Direction.ToString();
-
 
 			switch (recognizer.Direction) {
 			case UISwipeGestureRecognizerDirection.Left:
@@ -141,14 +187,13 @@ namespace xam
 				break;
 			}
 
-			//MoveLeftTest();
-
 			RandomPlacement(-1, -1, -1);
 			Animations();
 
-			//labelDebug.Text = DebugBoard();
+			UpdateScoreLabels();
 
 			if (CheckGameOver()) {
+				// TODO: Direct to a new screen, with score and try again buttons.
 				labelScore.Text = "Game Over";
 				gameOver = true;
 			}
@@ -160,12 +205,15 @@ namespace xam
 				for (int j = 0; j < 4; j++)
 					if (!board [i, j].HasValue)
 						return false;
+
+			// TODO: Add logic to test if combines are possible.
+
 			return true;
 		}
 
 		#endregion
 
-		#region MoveGeneric + LFUD
+		#region MoveGeneric + LeftRightUpDown
 
 		void MoveLeft()
 		{
@@ -237,10 +285,13 @@ namespace xam
 		                 Func<int, int, bool> limitCheck, int start, int end,
 		                 Action<bool, int, int, int, SlideTile> setTileCoords)
 		{
-			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) {
-				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) {
-					int i = 1;//IncOrDec(incOrDec, start, 1);
-					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) {
+			for (int row = start; limitCheck(row, end); row = IncOrDec(incOrDec, row, 1)) 
+			{
+				for (int col = start; limitCheck(col, end); col = IncOrDec(incOrDec, col, 1)) 
+				{
+					int i = 1;
+					while (!boardAccess(row, col).HasValue && limitCheck(IncOrDec(incOrDec, col, i), end)) 
+					{
 						if (boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
 							boardSetter(row, col, boardAccess(row, IncOrDec(incOrDec, col, i)));
 							boardSetter(row, IncOrDec(incOrDec, col, i), null);
@@ -249,20 +300,21 @@ namespace xam
 							setTileCoords(incOrDec, row, col, i, tile);
 							slideAndCombineTiles.Add(tile);
 						}
-						i++;// = IncOrDec(incOrDec, i, 1);
+						i++;
 					}
 
-					i = 1;//IncOrDec(incOrDec, start, 1);
+					i = 1;
 					while (boardAccess(row, col).HasValue
 					       && limitCheck(IncOrDec(incOrDec, col, i), end)
-					       && !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) {
-						i++;//i = IncOrDec(incOrDec, i, 1);
+					       && !boardAccess(row, IncOrDec(incOrDec, col, i)).HasValue) 
+					{
+						i++;
 					}
 
 					if (boardAccess(row, col).HasValue
 					    && limitCheck(IncOrDec(incOrDec, col, i), end)
-					    && boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) {
-
+					    && boardAccess(row, col) == boardAccess(row, IncOrDec(incOrDec, col, i))) 
+					{
 						boardSetter(row, col, boardAccess(row, col) * 2);
 						boardSetter(row, IncOrDec(incOrDec, col, i), null);
 
@@ -271,40 +323,11 @@ namespace xam
 						tile.NewValue = boardAccess(row, col).Value;
 						slideAndCombineTiles.Add(tile);
 
-						// jump ahead
-						//col = IncOrDec(incOrDec, col, 1);
-					}
-				}
-
-			}
-
-
-			/*
-			for (int i = start; limitCheck(i, end); i = incOrDec ? i+1 : i-1) {
-				for (int j = start; limitCheck(j, end); j = incOrDec ? j+1 : j-1) {
-					if (!boardAccess(i,j).HasValue) {
-						for (int nextj = incOrDec ? j + 1 : j - 1; limitCheck(nextj, end); nextj = incOrDec ? nextj+1 : nextj-1) {
-							if (boardAccess (i, nextj).HasValue) {
-								boardSetter (i, j, boardAccess(i, nextj));
-								boardSetter (i, nextj, null);
-							}
-						}
-					}
-				}
-				for (int j = start; limitCheck(j, incOrDec ? end-1 : end+1); j = incOrDec ? j+1 : j-1) {
-					if (boardAccess(i, j).HasValue && boardAccess(i, j) == boardAccess(i, incOrDec ? j+1 : j-1)) {
-						boardSetter(i, j, boardAccess(i,j) * 2);
-						for (int nextj = incOrDec ? j+1 : j-1; limitCheck(nextj, end); nextj = incOrDec ? nextj+1 : nextj-1) {
-							if(limitCheck(nextj, incOrDec ? end-1 : end+1))
-								boardSetter(i, nextj, boardAccess(i, incOrDec ? nextj+1 : nextj-1));
-							else
-								boardSetter(i, nextj, null);
-						}
-						j=incOrDec ? j+1 : j-1;
+						// NOTE: WOOOOOOOOOO!!!
+						score += tile.NewValue;
 					}
 				}
 			}
-			*/
 		}
 
 		#endregion
@@ -391,20 +414,32 @@ namespace xam
 			//int row;
 			//int col;
 
+			int tests = 0;
+
 			// allow manual override for testing.
 			if (row < 0) {
 				do {
 					row = (r.Next() % 4);
 					col = (r.Next() % 4);
-				} while (board [row, col].HasValue);
+					tests++;
+				} while (board [row, col].HasValue && tests < 16);
 			}
 
-			board [row, col] = val > 0 ? val : (r.Next() % 2 + 1) * 2;
+			// we might let them play with a full board if swipes are possible, but not be able to place squares.
+			if (tests <= 16) 
+			{
+				var newValue = val > 0 ? val : (r.Next() % 2 + 1) * 2;
 
-			newTiles.Add(new NewTile() {
-				ToRow = row,
-				ToCol = col
-			});
+				board [row, col] = newValue;
+
+				newTiles.Add(new NewTile() {
+					ToRow = row,
+					ToCol = col
+				});
+
+				// official 2048 app only gives points for combined tiles.
+				// score += newValue;
+			}
 		}
 
 		#endregion
@@ -446,24 +481,6 @@ namespace xam
 			slideAndCombineTiles.Clear();
 		}
 
-		/*
-		void CombineTiles()
-		{
-			foreach (var slide in slideAndCombineTiles) {
-				var label = boardTiles[slide.ToRow, slide.ToCol];
-				label.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Blue);
-				//label.Frame = GetSquareFrame(slide.ToRow, slide.ToCol);
-				label.Text = slide.NewValue.ToString();
-				boardTiles[slide.ToRow, slide.ToCol] = label;
-
-				boardTiles [slide.FromRow, slide.FromCol].RemoveFromSuperview();
-				boardTiles[slide.FromRow, slide.FromCol] = null;
-			}
-
-			combineTiles.Clear();
-		}
-		*/
-
 		void NewTiles()
 		{
 			foreach (var nta in newTiles) {
@@ -492,11 +509,11 @@ namespace xam
 			newTiles.Clear();
 		}
 
-		private readonly object animeObject = new object();
+		private readonly object animeLockObject = new object();
 
 		public void Animations()
 		{
-			lock (animeObject) {
+			lock (animeLockObject) {
 				UIView.Animate(.2f,
 					() => {
 						SlideAndCombineTiles();
@@ -511,6 +528,19 @@ namespace xam
 
 		#endregion
 
+		void UpdateScoreLabels()
+		{
+			labelScore.Text = score.ToString();
+
+			if (score > highScore)
+			{
+				highScore = score;
+				HighScore.SaveHighScore(score, DateTime.Today, highScores);
+			}
+
+			labelBest.Text = highScore.ToString();
+		}
+
 		#region DrawSquare
 
 		static RectangleF GetSquareFrame(int row, int col)
@@ -524,7 +554,7 @@ namespace xam
 
 			l2.TextAlignment = UITextAlignment.Center;
 			l2.TextColor = UIColor.Black;
-			l2.Font = UIFont.FromName(@"Arial Rounded MT Bold", 20);
+			l2.Font = UIFont.FromName(@"Futura", 20);
 			l2.Text = value.ToString();
 
 			//l2.BackgroundColor = UIColor.Yellow;
