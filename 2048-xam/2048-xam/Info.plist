@@ -5,7 +5,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>2048 COPY</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.skimania.xam</string>
+	<string>org.skimania.2048</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>

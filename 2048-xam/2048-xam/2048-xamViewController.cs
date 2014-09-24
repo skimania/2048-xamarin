@@ -47,7 +47,7 @@ namespace xam
 			public int Score;
 			public DateTime Date;
 
-			static string filePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "HighScores.md";
+			static string filePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "/HighScores.md";
 
 			public static List<HighScore> LoadScores(ref int highScore)
 			{
