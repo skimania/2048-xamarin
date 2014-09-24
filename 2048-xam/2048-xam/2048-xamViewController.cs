@@ -519,8 +519,13 @@ namespace xam
 
 			public bool TestGood()
 			{
-				return /*HasPair()*/ 
-					HasTwoPair() || HasThree() || HasFour() || HasFlush() || HasFullHouse() || HasStraight();
+				return HasPair() ||
+				HasTwoPair() ||
+				HasThree() ||
+				HasFour() ||
+				HasFlush() ||
+				HasFullHouse() ||
+				HasStraight();
 			}
 
 			public bool HasPair()
@@ -639,6 +644,8 @@ namespace xam
 		{
 			var handsToCheck = GetAllHands();
 
+			List<UIView> highlights = new List<UIView>();
+
 			foreach (var hand in handsToCheck.ToList())
 			{
 				if (hand.TestGood())
@@ -667,16 +674,18 @@ namespace xam
 			}
 		}
 
-		void HighlightRow(int row)
+		UIView HighlightRow(int row)
 		{
 			UIView highlightbar = new UIView(new RectangleF(15, 15 + 64 * row, 250, 64));
 			HighlightLine(highlightbar);
+			return highlightbar;
 		}
 
-		void HighlightCol(int col)
+		UIView HighlightCol(int col)
 		{
 			UIView highlightbar = new UIView(new RectangleF(15 + 50 * col, 15, 50, 320));
 			HighlightLine(highlightbar);
+			return highlightbar;
 		}
 
 		void HighlightLine(UIView highlightbar)
@@ -689,14 +698,62 @@ namespace xam
 
 			boardView.Add(highlightbar);
 
-			var t = UIView.AnimateAsync(2f, () =>
+			UIView.Animate(2f, () =>
 			{
 				highlightbar.Layer.BackgroundColor = new CGColor(1, 0, 0, 0.2f);
-			
-			});
-			//while (!t.IsCompleted)
-			//	Thread.Sleep(100);
+			} 
+			);
+
+			ChainAnimations(0,
+				new ChainAnimationOption() {
+					duration = 1,
+					action = () =>
+					{
+						highlightbar.Layer.BackgroundColor = new CGColor(1, 0, 0, 0.2f);
+
+					}
+				},
+				new ChainAnimationOption() {
+					duration = 1,
+					action = () =>
+					{
+						highlightbar.Layer.BackgroundColor = new CGColor(0, 1, 0, 0.2f);
+
+					}
+				},
+				new ChainAnimationOption() {
+					duration = 1,
+					action = () =>
+					{
+						highlightbar.Layer.BackgroundColor = new CGColor(0, 0, 1, 0.2f);
+
+					}
+				}
+			);
+
+			//t.Wait();
+
+
 		}
+
+		public class ChainAnimationOption
+		{
+			public float duration = 1;
+			public NSAction action;
+		}
+
+		private void ChainAnimations(int i = 0, params ChainAnimationOption[] animations)
+		{
+			if (i < animations.Length)
+				UIView.Animate(animations [i].duration, animations [i].action, () =>
+				{
+					i++;
+					ChainAnimations(i, animations);
+				}
+				);
+		}
+
+
 
 		void NewTiles()
 		{
