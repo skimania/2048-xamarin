@@ -8,6 +8,8 @@ using MonoTouch.UIKit;
 using MonoTouch.CoreGraphics;
 
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace xam
 {
@@ -31,8 +33,8 @@ namespace xam
 		 * 
 		 * Convert to Poker Game Project.
 		 * 
-		 * 1. Make board 5x5
-		 * 2. Render cards instead of numbers
+		 * //1. Make board 5x5
+		 * //2. Render cards instead of numbers
 		 * 3. Change slide and combine logic as follows:
 		 * 		a. No more combining
 		 * 		b. After sliding test complete rows for poker hands (cards in two rows count twice and double score)
@@ -47,10 +49,10 @@ namespace xam
 
 		bool gameOver = true;
 
-		Card[,] board = new Card[5, 5];
+		Card[,] cardsOnBoard = new Card[5, 5];
 		UIView[,] boardTiles = new UIView[5, 5];
 		List<NewTile> newTiles = new List<NewTile>();
-		List<SlideTile> slideAndCombineTiles = new List<SlideTile>();
+		List<SlideTile> slideTiles = new List<SlideTile>();
 
 		int score = 0;
 		int highScore = 0;
@@ -58,6 +60,8 @@ namespace xam
 		List<HighScore> highScores;
 
 		#endregion
+
+		#region HighScore Class
 
 		class HighScore
 		{
@@ -104,7 +108,9 @@ namespace xam
 			}
 		}
 
-		Dictionary<int, ColorPair> tileColors = new Dictionary<int, ColorPair>();
+		#endregion
+
+		#region Card/Suit/Rank Classes and Enum
 
 		public enum Suit
 		{
@@ -136,42 +142,13 @@ namespace xam
 			public Suit Suit;
 			public Rank Rank;
 
-			public string ToString()
+			public override string ToString()
 			{
-				return Rank.ToString() + " of " + Suit;
+				return Rank.ToString().Replace("_", "") + " of " + Suit;
 			}
 		}
 
-		class ColorPair
-		{
-			public CGColor BackColor;
-			public CGColor TextColor;
-
-			public ColorPair(CGColor backColor, CGColor textColor)
-			{
-				this.BackColor = backColor;
-				this.TextColor = textColor;
-			}
-		}
-
-		private void SetupTileColors()
-		{
-			tileColors.Add(2, new ColorPair(new CGColor(0.93f, 0.93f, 0.93f, 1), new CGColor(0, 0, 0, 1)));
-			tileColors.Add(4, new ColorPair(new CGColor(0.80f, 0.80f, 0.82f, 1), new CGColor(0, 0, 0, 1)));
-			tileColors.Add(8, new ColorPair(new CGColor(0.95f, 0.74f, 0.37f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(16, new ColorPair(new CGColor(0.96f, 0.67f, 0.20f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(32, new ColorPair(new CGColor(0.99f, 0.55f, 0.51f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(64, new ColorPair(new CGColor(0.99f, 0.35f, 0.18f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(128, new ColorPair(new CGColor(0.95f, 0.87f, 0.40f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(256, new ColorPair(new CGColor(1.00f, 0.92f, 0.43f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(512, new ColorPair(new CGColor(0.99f, 0.15f, 0.17f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(1024, new ColorPair(new CGColor(1.00f, 0.91f, 0.58f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(2048, new ColorPair(new CGColor(0.52f, 0.99f, 0.39f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(4096, new ColorPair(new CGColor(0.36f, 0.60f, 0.99f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(8196, new ColorPair(new CGColor(0.99f, 0.42f, 0.95f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(16384, new ColorPair(new CGColor(0.43f, 1.00f, 0.90f, 1), new CGColor(1, 1, 1, 1)));
-			tileColors.Add(32768, new ColorPair(new CGColor(0.24f, 0.99f, 0.49f, 1), new CGColor(1, 1, 1, 1)));
-		}
+		#endregion
 
 		#region View lifecycle
 
@@ -179,17 +156,17 @@ namespace xam
 		{
 			base.ViewWillAppear(animated);
 
-			SetupTileColors();
+			//SetupTileColors();
 
 			gameOver = false;
 
 			DrawBlankBoard();
 
-			RandomPlacement(-1, -1, -1);
-			RandomPlacement(-1, -1, -1);
-			RandomPlacement(-1, -1, -1);
-			RandomPlacement(-1, -1, -1);
-			RandomPlacement(-1, -1, -1);
+			RandomPlacement(-1, -1, null);
+			RandomPlacement(-1, -1, null);
+			RandomPlacement(-1, -1, null);
+			RandomPlacement(-1, -1, null);
+			RandomPlacement(-1, -1, null);
 //			RandomPlacement (0,0,2);
 //			RandomPlacement (0,1,2);
 //			RandomPlacement (0,2,2);
@@ -246,7 +223,7 @@ namespace xam
 				break;
 			}
 
-			RandomPlacement(-1, -1, -1);
+			RandomPlacement(-1, -1, null);
 			Animations();
 
 			UpdateScoreLabels();
@@ -261,9 +238,9 @@ namespace xam
 
 		bool CheckGameOver()
 		{
-			for (int i = 0; i < 4; i++)
-				for (int j = 0; j < 4; j++)
-					if (board [i, j] == null)
+			for (int i = 0; i < 5; i++)
+				for (int j = 0; j < 5; j++)
+					if (cardsOnBoard [i, j] == null)
 						return false;
 
 			// TODO: Add logic to test if combines are possible.
@@ -278,8 +255,8 @@ namespace xam
 		void MoveLeft()
 		{
 			MoveGeneric(
-				(i, j) => board [i, j],
-				(i, j, k) => board [i, j] = k,
+				(i, j) => cardsOnBoard [i, j],
+				(i, j, k) => cardsOnBoard [i, j] = k,
 				true, 
 				(i, lim) => i < lim, 
 				0, 5, 
@@ -289,8 +266,8 @@ namespace xam
 		void MoveRight()
 		{
 			MoveGeneric(
-				(i, j) => board [i, j],
-				(i, j, k) => board [i, j] = k,
+				(i, j) => cardsOnBoard [i, j],
+				(i, j, k) => cardsOnBoard [i, j] = k,
 				false, 
 				(i, lim) => i > lim, 
 				4, -1,
@@ -301,8 +278,8 @@ namespace xam
 		void MoveUp()
 		{
 			MoveGeneric(
-				(i, j) => board [j, i],
-				(i, j, k) => board [j, i] = k,
+				(i, j) => cardsOnBoard [j, i],
+				(i, j, k) => cardsOnBoard [j, i] = k,
 				true, 
 				(i, lim) => i < lim, 
 				0, 5,
@@ -312,8 +289,8 @@ namespace xam
 		void MoveDown()
 		{
 			MoveGeneric(
-				(i, j) => board [j, i],
-				(i, j, k) => board [j, i] = k,
+				(i, j) => cardsOnBoard [j, i],
+				(i, j, k) => cardsOnBoard [j, i] = k,
 				false, 
 				(i, lim) => i > lim, 
 				4, -1,
@@ -359,7 +336,7 @@ namespace xam
 
 							var tile = new SlideTile();
 							setTileCoords(incOrDec, row, col, i, tile);
-							slideAndCombineTiles.Add(tile);
+							slideTiles.Add(tile);
 						}
 						i++;
 					}
@@ -473,13 +450,8 @@ namespace xam
 
 		Random r = new Random();
 
-		void RandomPlacement(int row, int col, int val)
+		void RandomPlacement(int row, int col, Card testCard)
 		{
-			//int i = 0;
-
-			//int row;
-			//int col;
-
 			int tests = 0;
 
 			// allow manual override for testing.
@@ -490,7 +462,7 @@ namespace xam
 					row = (r.Next() % 5);
 					col = (r.Next() % 5);
 					tests++;
-				} while (board [row, col] != null && tests < 25);
+				} while (cardsOnBoard [row, col] != null && tests < 25);
 			}
 
 			// we might let them play with a full board if swipes are possible, but not be able to place squares.
@@ -501,7 +473,7 @@ namespace xam
 					Rank = (Rank)(r.Next() % 13 + 2)
 				};//val > 0 ? val : (r.Next() % 2 + 1) * 2;
 
-				board [row, col] = newValue;
+				cardsOnBoard [row, col] = newValue;
 
 				newTiles.Add(new NewTile() {
 					ToRow = row,
@@ -517,51 +489,220 @@ namespace xam
 
 		#region RunAnimations
 
-		void SetTileColor(int value, UILabel label)
-		{
-			var col = tileColors [value];
-			label.Layer.BackgroundColor = col.BackColor;
-			label.TextColor = new UIColor(col.TextColor);
-		}
-
 		void SlideAndCombineTiles()
 		{
-			foreach (var slide in slideAndCombineTiles)
+			foreach (var slide in slideTiles)
 			{
+				var label = boardTiles [slide.FromRow, slide.FromCol];
+		
+				label.Frame = GetSquareFrame(slide.ToRow, slide.ToCol);
 
-				/*if (slide is CombineTile)
+				boardTiles [slide.ToRow, slide.ToCol] = label;
+				boardTiles [slide.FromRow, slide.FromCol] = null;
+			}
+
+			slideTiles.Clear();
+		}
+
+		#region Hand - Check Hand Logic
+
+		class Hand
+		{
+			public int? Row;
+			public int? Col;
+			public Card[] Cards;
+
+			public Hand(Card[] cards)
+			{
+				this.Cards = cards;
+			}
+
+			public bool TestGood()
+			{
+				return /*HasPair()*/ 
+					HasTwoPair() || HasThree() || HasFour() || HasFlush() || HasFullHouse() || HasStraight();
+			}
+
+			public bool HasPair()
+			{
+				var rankGroups = Cards.GroupBy(card => card.Rank);
+				return rankGroups.FirstOrDefault(grp => grp.Count() == 2) != null;
+			}
+
+			public bool HasTwoPair()
+			{
+				var rankGroups = Cards.GroupBy(card => card.Rank).ToList();
+				var pairA = rankGroups.FirstOrDefault(grp => grp.Count() == 2);
+
+				if (pairA == null)
+					return false;
+
+				rankGroups.Remove(pairA);
+
+				var pairB = rankGroups.FirstOrDefault(grp => grp.Count() == 2);
+
+				return pairB != null;
+			}
+
+			public bool HasThree()
+			{
+				var rankGroups = Cards.GroupBy(card => card.Rank);
+				return rankGroups.FirstOrDefault(grp => grp.Count() == 3) != null;
+			}
+
+			public bool HasFour()
+			{
+				var rankGroups = Cards.GroupBy(card => card.Rank);
+				return rankGroups.FirstOrDefault(grp => grp.Count() == 4) != null;
+			}
+
+			public bool HasFullHouse()
+			{
+				return HasPair() && HasThree();
+			}
+
+			public bool HasFlush()
+			{
+				var rankGroups = Cards.GroupBy(card => card.Suit);
+				return rankGroups.FirstOrDefault(grp => grp.Count() == 5) != null;
+			}
+
+			public bool HasStraight()
+			{
+				var sorted = Cards.OrderBy(c => c.Rank).ToArray();
+				for (int i = 0; i < 4; i++)
 				{
-					var label = boardTiles [slide.ToRow, slide.ToCol];
+					if (sorted [i].Rank != sorted [i + 1].Rank)
+						return false;
+				}
+				return true;
+			}
 
-					//SetTileColor(board [slide.ToRow, slide.ToCol], label);
+			public bool HasStraighFlush()
+			{
+				return HasStraight() && HasFlush();
+			}
 
-					label.Text = (slide as CombineTile).NewValue.ToString();
+			public bool HasRoyalStraighFlush()
+			{
+				return HasStraighFlush() && HighCard().Rank == Rank.Ace;
+			}
 
-					boardTiles [slide.FromRow, slide.FromCol].RemoveFromSuperview();
-					boardTiles [slide.FromRow, slide.FromCol] = null;
-				} else*/
+			public Card HighCard()
+			{
+				return Cards.OrderBy(c => c.Rank).ThenBy(c => c.Suit).First();
+			}
+		}
+
+		#endregion
+
+		#region GetAllHands()
+
+		List<Hand> GetAllHands()
+		{
+			List<Hand> handsToCheck = new List<Hand>();
+			for (int i = 0; i < 5; i++)
+			{
+				Card[] handRow = new Card[5];
+				Card[] handCol = new Card[5];
+				for (int j = 0; j < 5; j++)
 				{
-					var label = boardTiles [slide.FromRow, slide.FromCol];
-			
-					//SetTileColor(board[slide.ToRow, slide.ToCol].Value, label);
+					if (handRow != null)
+					{
+						handRow [j] = cardsOnBoard [i, j];
+						if (handRow [j] == null)
+							handRow = null;
+					}
+					if (handCol != null)
+					{
+						handCol [j] = cardsOnBoard [j, i];
+						if (handCol [j] == null)
+							handCol = null;
+					}
+				}
+				if (handRow != null)
+					handsToCheck.Add(new Hand(handRow) {
+						Row = i
+					});
+				if (handCol != null)
+					handsToCheck.Add(new Hand(handCol) {
+						Col = i
+					});
+			}
+			return handsToCheck;
+		}
 
-					label.Frame = GetSquareFrame(slide.ToRow, slide.ToCol);
+		#endregion
 
-					boardTiles [slide.ToRow, slide.ToCol] = label;
-					boardTiles [slide.FromRow, slide.FromCol] = null;
+
+		void ClearRows()
+		{
+			var handsToCheck = GetAllHands();
+
+			foreach (var hand in handsToCheck.ToList())
+			{
+				if (hand.TestGood())
+				{
+					labelStatus.Text = "Woooooo";
+
+					if (hand.Row.HasValue)
+						HighlightRow(hand.Row.Value);
+
+					if (hand.Col.HasValue)
+						HighlightCol(hand.Col.Value);
+				} else
+				{
+					handsToCheck.Remove(hand);
 				}
 			}
 
-			slideAndCombineTiles.Clear();
+			foreach (var hand in handsToCheck)
+			{
+				for (int i = 0; i < 5; i++)
+				{
+					UIView tile = boardTiles [hand.Row ?? i, hand.Col ?? i];
+					cardsOnBoard [hand.Row ?? i, hand.Col ?? i] = null;
+					UIView.Animate(1, () => tile.RemoveFromSuperview());
+				}
+			}
+		}
+
+		void HighlightRow(int row)
+		{
+			UIView highlightbar = new UIView(new RectangleF(15, 15 + 64 * row, 250, 64));
+			HighlightLine(highlightbar);
+		}
+
+		void HighlightCol(int col)
+		{
+			UIView highlightbar = new UIView(new RectangleF(15 + 50 * col, 15, 50, 320));
+			HighlightLine(highlightbar);
+		}
+
+		void HighlightLine(UIView highlightbar)
+		{
+			highlightbar.Layer.BackgroundColor = new CGColor(1, 0, 0, 0);
+
+			highlightbar.Layer.BorderColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Black);
+			highlightbar.Layer.BorderWidth = 2;
+			highlightbar.Layer.CornerRadius = 3;
+
+			boardView.Add(highlightbar);
+
+			var t = UIView.AnimateAsync(2f, () =>
+			{
+				highlightbar.Layer.BackgroundColor = new CGColor(1, 0, 0, 0.2f);
+			
+			});
+			//while (!t.IsCompleted)
+			//	Thread.Sleep(100);
 		}
 
 		void NewTiles()
 		{
 			foreach (var nta in newTiles)
 			{
-				var l = DrawSquare(nta.ToRow, nta.ToCol, board [nta.ToRow, nta.ToCol], null);
-
-				//SetTileColor(board [nta.ToRow, nta.ToCol].Value, l);
+				var l = DrawSquare(nta.ToRow, nta.ToCol, cardsOnBoard [nta.ToRow, nta.ToCol], null);
 
 				// starts tiny
 				l.Transform = CGAffineTransform.MakeScale(.2f, .2f);
@@ -600,7 +741,16 @@ namespace xam
 					},
 					() =>
 					{
-						NewTiles();
+						UIView.Animate(.2f,
+							() =>
+							{
+								NewTiles();
+							},
+							() =>
+							{
+								ClearRows();
+							}
+						);
 					}
 				);
 			}
@@ -632,9 +782,8 @@ namespace xam
 		{
 			UIView l2 = new UIView(GetSquareFrame(row, col));
 
-
-
-			//l2.BackgroundColor = UIColor.Yellow;
+			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.White);
+			//l2.Layer.AllowsEdgeAntialiasing = true;
 			l2.Layer.CornerRadius = 4;
 
 			if (card != null)
@@ -655,16 +804,12 @@ namespace xam
 				lbl.Font = UIFont.FromName(@"Futura", 20);
 
 
-
+				l2.Layer.BorderColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Black);
 				l2.Layer.BorderWidth = 2;
+
 				l2.AddSubview(img);
 				l2.AddSubview(lbl);
 			}
-
-			l2.Layer.BackgroundColor = ColorHelper.ConvertUIColorToCGColor(backColor ?? UIColor.White);
-			l2.Layer.BorderColor = ColorHelper.ConvertUIColorToCGColor(UIColor.Black);
-			l2.Layer.AllowsEdgeAntialiasing = true;
-
 
 			boardView.Add(l2);
 
@@ -700,7 +845,7 @@ namespace xam
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < 4; j++)
-					debug += board [i, j] + "|";
+					debug += cardsOnBoard [i, j] + "|";
 				debug += "\n";
 			}
 
