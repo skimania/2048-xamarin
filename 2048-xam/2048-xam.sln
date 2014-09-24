@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2048-xam", "2048-xam\2048-xam.csproj", "{F47F6A5A-0CCD-4989-8EBC-1C2626D5A4F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokeSlide", "2048-xam\PokeSlide.csproj", "{F47F6A5A-0CCD-4989-8EBC-1C2626D5A4F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +27,6 @@ Global
 		{F47F6A5A-0CCD-4989-8EBC-1C2626D5A4F4}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = 2048-xam\2048-xam.csproj
+		StartupItem = 2048-xam\PokeSlide.csproj
 	EndGlobalSection
 EndGlobal
