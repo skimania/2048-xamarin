@@ -8,7 +8,7 @@
 	--nomanifest \
 	--nosign \
 	-dev \
-	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhone/Debug/2048xam.app \
+	/Users/skimania/Dev/2048-xamarin/2048-xam/2048-xam/bin/iPhone/Debug/PokeSlide.app \
 	-r \
 	/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/2.1/System.dll \
 	-r \
