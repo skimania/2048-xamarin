@@ -22,7 +22,7 @@ namespace xam
 
 		}
 
-		#endregion`
+		#endregion
 
 		// TODO: Shrink font to fit in box as text is longer.
 		// TODO: Add share to twitter/facebook (learn that integration)
@@ -815,6 +815,8 @@ namespace xam
 
 		#endregion
 
+		#region UpdateScoreLabels
+
 		void UpdateScoreLabels()
 		{
 			labelScore.Text = score.ToString();
@@ -822,11 +824,13 @@ namespace xam
 			if (score > highScore)
 			{
 				highScore = score;
-				HighScore.SaveHighScore(score, DateTime.Today, highScores);
+				//	HighScore.SaveHighScore(score, DateTime.Today, highScores);
 			}
 
 			labelBest.Text = highScore.ToString();
 		}
+
+		#endregion
 
 		#region DrawSquare
 
